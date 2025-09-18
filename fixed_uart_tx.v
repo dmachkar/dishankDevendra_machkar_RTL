@@ -70,7 +70,7 @@ reg [DATA_WIDTH:0] data_reg = 0;
 reg [18:0] prescale_reg = 0;
 reg [3:0] bit_cnt = 0;
 
-reg flag = 0;
+reg flag = 0;                               // flag reg used instead of bit_cnt==0, to differentiate between a new data packet operation and the transfer operation
 
 assign s_axis_tready = s_axis_tready_reg;
 assign txd = txd_reg;
@@ -84,7 +84,7 @@ always @(posedge clk) begin
         prescale_reg <= 0;
         bit_cnt <= 0;
         busy_reg <= 0;
-        flag <= 0;
+        flag <= 0;                       // flag reg set to 0
     end else begin
         if (prescale_reg > 0) begin
             s_axis_tready_reg <= 0;
@@ -97,20 +97,19 @@ always @(posedge clk) begin
                 s_axis_tready_reg <= !s_axis_tready_reg;
                 prescale_reg <= (prescale << 3)-1;
                 bit_cnt <= DATA_WIDTH;
-                flag <= 1;
+                flag <= 1;                // flag reg set to 1
                 data_reg <= {1'b1, s_axis_tdata};
                 txd_reg <= 0;
                 busy_reg <= 1;
             end
         end else begin
-            if (bit_cnt > 0) begin
+            if (bit_cnt > 0) begin                       // bit_cnt conditions set to trigger on value '0' instead of '1'
                 bit_cnt <= bit_cnt - 1;
                 prescale_reg <= (prescale << 3)-1;
-                {data_reg, txd_reg} <= data_reg >> 1;
-            end else if (bit_cnt == 0) begin
-                bit_cnt <= bit_cnt - 1;
-                prescale_reg <= (prescale << 3);
-                flag <= 0;
+                {data_reg, txd_reg} <= data_reg >> 1;      // '>>>' changed to '>>'
+            end else if (bit_cnt == 0) begin             // bit_cnt conditions set to trigger on value '0' instead of '1', bit_cnt decrement removed              
+                prescale_reg <= (prescale << 3);          // '>=' changed to '<='
+                flag <= 0;               // flag reg set to 0
                 txd_reg <= 1;
             end
         end

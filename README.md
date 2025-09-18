@@ -1,7 +1,7 @@
 # dishankDevendra_machkar_RTL
 Take home task repository for Hardware Engineer (RTL Design or Verification) position
 
-
+---
 RTL Project - Quantum Computing Emulator Core 
 
  This solo project was part of my academic coursework. I Emulated a quantum computer, implementing a quantum circuit using operator matrices with complex FP numbers. The quantum circuit implementation includes matrix multiplication. The intended multiplication is as follows: 
@@ -12,8 +12,22 @@ RTL Project - Quantum Computing Emulator Core
 
  It was also optimized and synthesized using Synopsys Design Compiler to achieve maximum clock frequency of 4.65 MHz without timing violations. 
 
+---
+
 I have multiple projects in verilog, systemverilog encompassing design and verification of DUTs. I have used docker during my 2 years in industry as a senior software engineer at Capgemini. While i have not used Verilater or Icarus Verilog, I have primarily used Modelsim, QuestaSim and its Visualizer Debug environment and Synopsys Design Compiler for synthesis.  
 
+---
+
+Code editing to produce errors:
+
+To induce errors, I have done 2 changes to the code:
+1. internal bit_cnt variable is set to the current value of the DATA_WIDTH parameter.
+2. The trasnmission line value assigment using the concatenation operator is changed to >>> operator. 
+3. prescale_reg assignment has >= assignment in one of the if cases. 
+
+'error_uart_tx.v' has all the code changes in the file.
+
+---
 SPEC document 
 
 Introduction
@@ -55,7 +69,7 @@ from overrun_error and the word is discarded.
 Module Interface
 the module should be defined as follows: 
 
-module uart #
+|- module uart #
 (
     parameter DATA_WIDTH = 8 // default data width
 )
@@ -86,7 +100,7 @@ module uart #
     //configuration
     input  wire [15:0]            prescale
 
-);
+); -|
 
 the module should contain two instances of modules uart_tx and uart_rx for their respective functional RTL.
 
@@ -94,8 +108,18 @@ Timing and Latency
 The core has a reference clk which is used along with prescale input to determine the baud rate for the UART Tx/Rx transmissions. All other operations are done with respect to the clk signal but the transmission is to be done with the prescale dependent baud rate.
 The transmission and receiving of both protocols should follow their defined protocol start/stop conditions with respect to the timing.
 
+---
 
+Sample solution:
 
+The easiest fix will be the prescale_reg assignment which can easily be debugged and are operator errors.
+When debugging for the data transfer, the engineer will get sign filled data bits when the datareg would be starting with bit 1. while data with data bit starting with 0 will be filled with 0, not generating an error and transferring correctly. Seeing this issue, the engineer will just change the sign filling arithmatic bit shift operator (>>>) to a logical bit shift (>>) operator fixing the error.
+The issue induced by the bit_cnt variable being assigned the DATA_WIDTH value will generate improper data packets. When observing the waveform and the spec the engineer might implement a flag variable to gate the calculation and change the internal  if else case dependent on bit_cnt:
+    if(bit_cnt > 1) begin ... & bit_cnt == 1 ...
+    to 
+    if(bit_cnt > 0) begin ... &  bit_cnt == 0 ...
+the flag logic is used for differentiating if the start condition is encountered.
 
+'fixed_uart_tx.v' has all the code changes in the file.
 
-
+---
