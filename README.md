@@ -228,8 +228,8 @@ The input zip file is LLMTask.zip and the output zip file is LLMTask_modified.zi
 The output, implemented the following changes:
 ![](images/output.png)
 
-These output zip file had flaws in its implementation. for eg- The model had ommited functionality of overrun_error and frame_error from rx rtl file and altered the functioning of the busy signal, the functionality implemented used masks which are implemented incorrectly, changes in the code which lead to loss of base functionality itself etc. 
+This output zip file had flaws in its implementation. For eg, the model had omitted functionality of overrun_error and frame_error from rx rtl file and altered the functioning of the busy signal, the functionality implemented used masks which are implemented incorrectly, changes in the code which lead to loss of base functionality itself, etc. 
 
-These problems are outside the scope of current frontier LLM models as most IPs are not open source. Along with that the current available data on hardware design in general is less over the internet than availability of other form of data. Hardware design also relies heavily on timing of circuits and thier cycle to cycle behavior. The LLMS tend to overlook the timing behavior of RTL circuits. it all boils down to lack of training data available. 
+These problems are outside the scope of current frontier LLM models as most IPs are not open source. Along with that, the current available data on hardware design is generally less over the internet than the availability of other forms of data. Hardware design also relies heavily on the timing of circuits and their cycle-to-cycle behavior. The LLM tends to overlook the timing behavior of RTL circuits.
 
 ---
