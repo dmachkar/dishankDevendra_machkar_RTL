@@ -27,6 +27,49 @@ To induce errors, I have done 2 changes to the code:
 
 'error_uart_tx.v' has all the code changes in the file.
 
+```
+
+always @(posedge clk) begin
+    if (rst) begin
+        s_axis_tready_reg <= 0;
+        txd_reg <= 1;
+        prescale_reg <= 0;
+        bit_cnt <= 0;
+        busy_reg <= 0;
+    end else begin
+        if (prescale_reg > 0) begin
+            s_axis_tready_reg <= 0;
+            prescale_reg <= prescale_reg - 1;
+        end else if (bit_cnt == 0) begin
+            s_axis_tready_reg <= 1;
+            busy_reg <= 0;
+
+            if (s_axis_tvalid) begin
+                s_axis_tready_reg <= !s_axis_tready_reg;
+                prescale_reg <= (prescale << 3)-1;
+                bit_cnt <= DATA_WIDTH;              // error induced due to bit_cnt assignment, changed from bit_cnt <= DATA_WIDTH+1;
+                data_reg <= {1'b1, s_axis_tdata};
+                txd_reg <= 0;
+                busy_reg <= 1;
+            end
+        end else begin
+            if (bit_cnt > 1) begin
+                bit_cnt <= bit_cnt - 1;
+                prescale_reg <= (prescale << 3)-1;
+                {data_reg, txd_reg} <= data_reg >>> 1; // error induced due to data_reg assignment, changed from {data_reg, txd_reg} <= {1'b0, data_reg};;
+            end else if (bit_cnt == 1) begin
+                bit_cnt <= bit_cnt - 1;
+                prescale_reg >= (prescale << 3);   // error induced due to prescale_reg, changed from prescale_reg <= (prescale << 3);
+                txd_reg <= 1;
+            end
+        end
+    end
+
+
+```
+
+
+
 ---
 SPEC document 
 
@@ -69,7 +112,8 @@ from overrun_error and the word is discarded.
 Module Interface
 the module should be defined as follows: 
 
-|- module uart #
+```
+module uart #
 (
     parameter DATA_WIDTH = 8 // default data width
 )
@@ -100,7 +144,9 @@ the module should be defined as follows:
     //configuration
     input  wire [15:0]            prescale
 
-); -|
+);
+
+```
 
 the module should contain two instances of modules uart_tx and uart_rx for their respective functional RTL.
 
@@ -121,5 +167,52 @@ The issue induced by the bit_cnt variable being assigned the DATA_WIDTH value wi
 the flag logic is used for differentiating if the start condition is encountered.
 
 'fixed_uart_tx.v' has all the code changes in the file.
+
+```
+
+reg flag = 0;                               // flag reg used instead of bit_cnt==0, to differentiate between a new data packet operation and the transfer operation
+
+always @(posedge clk) begin
+    if (rst) begin
+        s_axis_tready_reg <= 0;
+        txd_reg <= 1;
+        prescale_reg <= 0;
+        bit_cnt <= 0;
+        busy_reg <= 0;
+        flag <= 0;                       // flag reg set to 0
+    end else begin
+        if (prescale_reg > 0) begin
+            s_axis_tready_reg <= 0;
+            prescale_reg <= prescale_reg - 1;
+        end else if (!flag) begin
+            s_axis_tready_reg <= 1;
+            busy_reg <= 0;
+
+            if (s_axis_tvalid) begin
+                s_axis_tready_reg <= !s_axis_tready_reg;
+                prescale_reg <= (prescale << 3)-1;
+                bit_cnt <= DATA_WIDTH;
+                flag <= 1;                // flag reg set to 1
+                data_reg <= {1'b1, s_axis_tdata};
+                txd_reg <= 0;
+                busy_reg <= 1;
+            end
+        end else begin
+            if (bit_cnt > 0) begin                       // bit_cnt conditions set to trigger on value '0' instead of '1'
+                bit_cnt <= bit_cnt - 1;
+                prescale_reg <= (prescale << 3)-1;
+                {data_reg, txd_reg} <= data_reg >> 1;      // '>>>' changed to '>>'
+            end else if (bit_cnt == 0) begin             // bit_cnt conditions set to trigger on value '0' instead of '1', bit_cnt decrement removed              
+                prescale_reg <= (prescale << 3);          // '>=' changed to '<='
+                flag <= 0;               // flag reg set to 0
+                txd_reg <= 1;
+            end
+        end
+    end
+end
+
+```
+
+
 
 ---
