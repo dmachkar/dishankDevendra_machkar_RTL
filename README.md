@@ -21,7 +21,7 @@ The matrices w, v etc are operator matrices with their matrix dimensions dictate
 
 ---
 
-I have multiple projects in verilog, systemverilog encompassing design and verification of DUTs. I have used docker during my 2 years in industry as a senior software engineer at Capgemini. While i have not used Verilater or Icarus Verilog, I have primarily used Modelsim, QuestaSim and its Visualizer Debug environment and Synopsys Design Compiler for synthesis.  
+I have multiple projects in verilog, systemverilog encompassing design and verification of DUTs. I have used docker during my 2 years in industry as a senior software engineer at Capgemini. I have extensive experience with ModelSim, QuestaSim (including its Visualizer Debug environment), and Synopsys Design Compiler for synthesis, and I'm eager to expand my skills with Verilator and Icarus Verilog in the future.
 
 ---
 
