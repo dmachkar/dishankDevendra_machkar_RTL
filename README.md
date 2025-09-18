@@ -5,10 +5,17 @@ Take home task repository for Hardware Engineer (RTL Design or Verification) pos
 **RTL Project - Quantum Computing Emulator Core**
 
  This solo project was part of my academic coursework. I Emulated a quantum computer, implementing a quantum circuit using operator matrices with complex FP numbers. The quantum circuit implementation includes matrix multiplication. The intended multiplication is as follows: 
+
+![](images/Matrix%20image.png)
+![](images/Matrix%20image%202.png)
   
  the matrices w, v etc are operator matrices with its matrix dimensions dictated by the number of qubits. These matrices are multiplied with an initial state vector matrix to get the result. elements in the matrices are complex floating point numbers and include imaginary and real part. 
 
+![](images/Calculations%20.png)
+
  The DUT uses srams for data retrieval, scratchpad memory and data output storage. Designware floating point MAC units are used for multiplication and addition of floating numbers. The DUT operated as follows:
+ 
+![](images/Timing%20behavior.png)
 
  It was also optimized and synthesized using Synopsys Design Compiler to achieve maximum clock frequency of 4.65 MHz without timing violations. 
 
@@ -151,20 +158,17 @@ module uart #
 the module should contain two instances of modules uart_tx and uart_rx for their respective functional RTL.
 
 Timing and Latency: 
--The core has a reference clk which is used along with prescale input to determine the baud rate for the UART Tx/Rx transmissions. All other operations are done with respect to the clk signal but the transmission is to be done with the prescale dependent baud rate.
--The transmission and receiving of both protocols should follow their defined protocol start/stop conditions with respect to the timing.
+- The core has a reference clk which is used along with prescale input to determine the baud rate for the UART Tx/Rx transmissions. All other operations are done with respect to the clk signal but the transmission is to be done with the prescale dependent baud rate.
+- The transmission and receiving of both protocols should follow their defined protocol start/stop conditions with respect to the timing.
 
 ---
 
 **Sample solution:**
 
--The easiest fix will be the prescale_reg assignment which can easily be debugged and are operator errors.
--When debugging for the data transfer, the engineer will get sign filled data bits when the data_reg would be starting with bit value '1'.While data with data bit starting with 0 will be filled with 0, not generating an error and transferring correctly. Seeing this issue, the engineer will just change the sign filling arithmatic bit shift operator (>>>) to a logical bit shift (>>) operator fixing the error.
--The issue induced by the bit_cnt variable being assigned the DATA_WIDTH value will generate improper data packets. When observing the waveform and the spec the engineer might implement a flag variable to gate the calculation and change the internal  if else case dependent on bit_cnt:
-    if(bit_cnt > 1) begin ... & bit_cnt == 1 ...
-    to 
-    if(bit_cnt > 0) begin ... &  bit_cnt == 0 ...
-the flag logic is used for differentiating if the start condition is encountered.
+- The easiest fix will be the prescale_reg assignment which can easily be debugged and are operator errors.
+- When debugging for the data transfer, the engineer will get sign filled data bits when the data_reg would be starting with bit value '1'.While data with data bit starting with 0 will be filled with 0, not generating an error and transferring correctly. Seeing this issue, the engineer will just change the sign filling arithmatic bit shift operator (>>>) to a logical bit shift (>>) operator fixing the error.
+- The issue induced by the bit_cnt variable being assigned the DATA_WIDTH value will generate improper data packets. When observing the waveform and the spec the engineer might implement a flag variable to gate the calculation and change the internal if else case dependent on bit_cnt:
+    if(bit_cnt > 1) begin to if(bit_cnt > 0)  and if(bit_cnt == 1)  to if(bit_cnt == 0) 
 
 'fixed_uart_tx.v' has all the code changes in the file.
 
