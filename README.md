@@ -9,11 +9,11 @@ Take home task repository for Hardware Engineer (RTL Design or Verification) pos
 ![](images/Matrix%20image.png)
 ![](images/Matrix%20image%202.png)
   
- the matrices w, v etc are operator matrices with its matrix dimensions dictated by the number of qubits. These matrices are multiplied with an initial state vector matrix to get the result. elements in the matrices are complex floating point numbers and include imaginary and real part. 
+The matrices w, v etc are operator matrices with their matrix dimensions dictated by the number of qubits. These matrices are multiplied with an initial state vector matrix to get the result. elements in the matrices are complex floating-point numbers and include imaginary and real part.
 
 ![](images/Calculations%20.png)
 
- The DUT uses srams for data retrieval, scratchpad memory and data output storage. Designware floating point MAC units are used for multiplication and addition of floating numbers. The DUT operated as follows:
+ The DUT uses SRAMs for data retrieval, scratchpad memory and data output storage. DesignWare floating point MAC units are used for multiplication and addition of floating numbers. The DUT timing behavior is as follows:
  
 ![](images/Timing%20behavior.png)
 
@@ -27,9 +27,9 @@ I have multiple projects in verilog, systemverilog encompassing design and verif
 
 **Code editing to produce errors:**
 
-To induce errors, I have done 3 changes to the code:
+To induce errors, I have made 3 changes to the code:
 - internal bit_cnt variable is set to the current value of the DATA_WIDTH parameter.
-- The trasnmission line value assigment using the concatenation operator is changed to >>> operator. 
+- The transmission line value assignment using the concatenation operator is changed to >>> operator. 
 - prescale_reg assignment has >= assignment in one of the if cases. 
 
 'error_uart_tx.v' has all the code changes in the file.
@@ -158,7 +158,7 @@ module uart #
 the module should contain two instances of modules uart_tx and uart_rx for their respective functional RTL.
 
 Timing and Latency: 
-- The core has a reference clk which is used along with prescale input to determine the baud rate for the UART Tx/Rx transmissions. All other operations are done with respect to the clk signal but the transmission is to be done with the prescale dependent baud rate.
+- The core has a reference clk which is used along with prescale input to determine the baud rate for the UART Tx/Rx transmissions. All other operations are done with respect to the clk signal, but the transmission is to be done with the prescale dependent baud rate.
 - The transmission and receiving of both protocols should follow their defined protocol start/stop conditions with respect to the timing.
 
 ---
@@ -166,7 +166,7 @@ Timing and Latency:
 **Sample solution:**
 
 - The easiest fix will be the prescale_reg assignment which can easily be debugged and are operator errors.
-- When debugging for the data transfer, the engineer will get sign filled data bits when the data_reg would be starting with bit value '1'.While data with data bit starting with 0 will be filled with 0, not generating an error and transferring correctly. Seeing this issue, the engineer will just change the sign filling arithmatic bit shift operator (>>>) to a logical bit shift (>>) operator fixing the error.
+- When debugging for the data transfer, the engineer will get sign filled data bits when the data_reg would start with bit value '1’. While data with data bit starting with 0 will be filled with 0, not generating an error and transferring correctly. Seeing this issue, the engineer will just change the sign filling arithmetic bit shift operator (>>>) to a logical bit shift (>>) operator fixing the error.
 - The issue induced by the bit_cnt variable being assigned the DATA_WIDTH value will generate improper data packets. When observing the waveform and the spec the engineer might implement a flag variable to gate the calculation and change the internal if else case dependent on bit_cnt:
     if(bit_cnt > 1) begin to if(bit_cnt > 0)  and if(bit_cnt == 1)  to if(bit_cnt == 0) 
 
@@ -216,7 +216,20 @@ always @(posedge clk) begin
 end
 
 ```
+---
+**LLM Question/Answer**
 
+For this part, I have put the aforementioned spec in a text file along with the RTL for both tx and rx of the core and the main uart RTL and uploaded the zip file with the following prompt:
+```
+The above folder has RTL files for UART to AXI Stream IP Core inside the rtl folder, which converts UART signal into AXI4 interface and vice versa. The details and the spec for the DUT are in the Spec.txt file under the docs folder. I want to extend the functionality of the DUT and implement a 4-bit wide input which can dictate the DATA_WIDTH parameter. Currently, the implementation relies on a hard coded parameter value present in the code. This data width value can go up to 9 bits only. Generate an output named width_error which is high when the input data width is more than 9. All corresponding calculations should be done according to the data width input. All changes should be made to the currently present RTL files only.
+```
+The input zip file is LLMTask.zip and the output zip file is LLMTask_modified.zip. The LLM that I have used for this task is ChatGPT running on GPT-5.
 
+The output, implemented the following changes:
+![](images/output.png)
+
+These output zip file had flaws in its implementation. for eg- The model had ommited functionality of overrun_error and frame_error from rx rtl file and altered the functioning of the busy signal, the functionality implemented used masks which are implemented incorrectly, changes in the code which lead to loss of base functionality itself etc. 
+
+These problems are outside the scope of current frontier LLM models as most IPs are not open source. Along with that the current available data on hardware design in general is less over the internet than availability of other form of data. Hardware design also relies heavily on timing of circuits and thier cycle to cycle behavior. The LLMS tend to overlook the timing behavior of RTL circuits. it all boils down to lack of training data available. 
 
 ---
